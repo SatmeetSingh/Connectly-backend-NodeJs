@@ -1,4 +1,5 @@
 import mongoose, { Document } from 'mongoose';
+import { hashValue } from '../utils/Bcrypt';
 
 export interface IUser extends Document {
   name: string;
@@ -15,6 +16,7 @@ export interface IUser extends Document {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
+  omitPassword: () => Omit<IUser, 'password'>;
 }
 const userSchema = new mongoose.Schema<IUser>(
   {
@@ -54,6 +56,21 @@ const userSchema = new mongoose.Schema<IUser>(
   },
   { timestamps: true }
 );
+
+userSchema.pre('save', async function (next) {
+  if (this.isModified('password')) {
+    if (this.password) {
+      this.password = await hashValue(this.password, 10);
+    }
+  }
+  next();
+});
+
+userSchema.methods.omitPassword = function (): Omit<IUser, 'password'> {
+  const userObject = this.toObject();
+  delete userObject.password;
+  return userObject;
+};
 
 userSchema.index({ createdAt: -1, isActive: 1 });
 

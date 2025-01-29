@@ -71,8 +71,8 @@ export const getuserByid = AsyncMiddleware(
     const { id } = req.params;
 
     const userData = await getuserDataById(id);
+    logger.info(`User with username: ${userData} is fetched successfully`);
 
-    logger.info(`User is successfully fetched, ${userData} `);
     return res.status(HTTPSTATUS.OK).json({
       message: 'User fetch successfully',
       user: userData,

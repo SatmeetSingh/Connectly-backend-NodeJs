@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
-
+import cookieParser from 'cookie-parser';
 import logger from './src/utils/Logging.js';
 import limiter from './src/utils/RateLimiting.js';
 import { BadRequestException } from './src/utils/HttpErrors.js';
@@ -20,6 +20,7 @@ import authRouter from './src/routes/AuthRouter.js';
 
 const app = express();
 const baseurl = config.BaseURL;
+app.use(cookieParser());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

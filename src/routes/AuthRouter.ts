@@ -1,11 +1,28 @@
-import { Router } from 'express';
-import { RegisterUser } from '../controllers/AuthController';
+import { Request, Response, Router } from 'express';
+import {
+  LoginUser,
+  RefreshAccessToken,
+  RegisterUser,
+} from '../controllers/AuthController';
 import { emailValidationMiddleware } from '../middlware/ValiationMiddleware';
+import { registerLimit } from '../utils/RateLimiting';
 
 const authRouter = Router();
 
-authRouter.post('/register', emailValidationMiddleware, RegisterUser);
-authRouter.post('/login');
+authRouter.post(
+  '/register',
+  registerLimit,
+  emailValidationMiddleware,
+  RegisterUser
+);
+authRouter.post('/login', LoginUser);
+
+authRouter.post('/refreshToken', RefreshAccessToken);
+authRouter.post('/logout', (req: Request, res: Response) => {
+  // Clear the refresh token cookie
+  res.clearCookie('refreshToken', { httpOnly: true, secure: true });
+  res.status(200).json({ message: 'Logged out successfully' });
+});
 
 export default authRouter;
 /**
@@ -39,13 +56,13 @@ export default authRouter;
    Handling passwords securely is critical to protecting user data.
 
    - **Hashing**:
-     - Never store plaintext passwords.            
+     - Never store plaintext passwords.             ✔ 
      - Use strong hashing algorithms like **bcrypt**, **Argon2**, or **PBKDF2** to hash passwords before storing them.
-   - **Salting**:
+   - **Salting**:          ✔
      - Add a unique salt to each password before hashing to prevent rainbow table attacks.
-   - **Password Strength**:
+   - **Password Strength**:      
      - Enforce a strong password policy to reduce the risk of brute force attacks.
-   - **Rate Limiting**:
+   - **Rate Limiting**:   ✔
      - Prevent multiple failed registration attempts from the same IP to avoid automated abuse.
 
 ---
@@ -64,7 +81,7 @@ export default authRouter;
 
 ---
 
-### **5. Data Uniqueness**
+### **5. Data Uniqueness**    ✔
    - Ensure that unique fields like email, username, or phone number are not already in use.
    - Use a database constraint or a check during the registration process to prevent duplicate accounts.
 
@@ -73,19 +90,19 @@ export default authRouter;
 ### **6. Secure Communication**
    - **Use HTTPS**:
      - Ensure all communication between the client and the server is encrypted using HTTPS to prevent man-in-the-middle attacks.
-   - **CORS**:
+   - **CORS**:               
      - Configure CORS to allow requests only from trusted origins.
 
 ---
 
-### **7. API Rate Limiting**
-   - Implement rate limiting to prevent abuse (e.g., multiple registrations from the same IP in a short period).
+### **7. API Rate Limiting**     
+   - Implement rate limiting to prevent abuse (e.g., multiple registrations from the same IP in a short period). ✔
    - Return a proper HTTP status code (e.g., `429 Too Many Requests`) when the limit is exceeded.
 
 ---
 
 ### **8. Error Handling**
-   - Provide clear and consistent error messages without exposing sensitive information.
+   - Provide clear and consistent error messages without exposing sensitive information. 
    - Common error cases:
      - Missing fields.
      - Invalid input formats.
@@ -120,7 +137,7 @@ export default authRouter;
 ### **11. Scalability and Performance**
    - **Database Indexing**:
      - Index fields like email, username, and phone number to speed up uniqueness checks.
-   - **Asynchronous Operations**:
+   - **Asynchronous Operations**:  
      - Use background jobs for non-essential tasks like sending verification emails or SMS to avoid blocking the API response.
    - **Caching**:
      - Use caching solutions (e.g., Redis) for rate limiting or session management to reduce load on your database.
@@ -162,15 +179,15 @@ export default authRouter;
 ---
 
 ### Example Workflow:
-1. **User Submits Registration Request**:
+1. **User Submits Registration Request**:      ✔
    - Input: Email, password, name, etc.
-2. **API Validates Input**:
+2. **API Validates Input**:                  ✔
    - Check mandatory fields and validate formats.
-3. **Check for Duplicates**:
+3. **Check for Duplicates**:                    ✔
    - Ensure email/username is not already in use.
-4. **Hash the Password**:
+4. **Hash the Password**:             ✔
    - Hash the password securely before storing it.
-5. **Save User to Database**:
+5. **Save User to Database**:          ✔
    - Store user data in the database (mark as unverified if verification is required).
 6. **Send Verification Email/SMS**:
    - Generate a verification token and send it to the user.

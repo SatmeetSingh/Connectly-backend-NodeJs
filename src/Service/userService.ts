@@ -46,5 +46,6 @@ export const getuserDataById = async (id: string) => {
     logger.error('Bad Request: User does not exist for this id');
     throw new BadRequestException('User does not exist for this id');
   }
+  logger.info('User has been fetched from database');
   return userData;
 };
